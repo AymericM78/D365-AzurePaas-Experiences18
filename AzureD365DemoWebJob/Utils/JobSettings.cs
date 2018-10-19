@@ -29,7 +29,7 @@ namespace AzureD365DemoWebJob
             if (!ConfigurationManager.AppSettings.AllKeys.Contains(key))
             {
                 throw new Exception($"Invalid configuration : setting '{key}' is missing in AppSettings section!");
-            }
+            }             
 
             return ConfigurationManager.AppSettings[key];
         }

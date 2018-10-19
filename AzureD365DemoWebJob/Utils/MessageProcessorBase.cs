@@ -1,5 +1,6 @@
 ﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Azure.KeyVault;
 using Microsoft.Pfe.Xrm;
 using Microsoft.ServiceBus.Messaging;
 using System;
@@ -75,7 +76,7 @@ namespace AzureD365DemoWebJob
         private void InitializeOrganizationServiceManager()
         {
             // If you're using an old version of .NET this will enable TLS 1.2
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;            
 
             var serverUri = XrmServiceUriFactory.CreateOnlineOrganizationServiceUri(JobSettings.CrmOrganizationName, CrmOnlineRegion.EMEA);
             OrganizationServiceManager = new OrganizationServiceManager(serverUri, JobSettings.CrmUserName, JobSettings.CrmUserPassword);
