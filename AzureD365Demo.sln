@@ -5,9 +5,7 @@ VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureD365DemoWebJob", "AzureD365DemoWebJob\AzureD365DemoWebJob.csproj", "{60A3C862-C233-4A0C-89A5-B7D4924FD95B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBusDataLoader", "..\ServiceBusDataLoader\ServiceBusDataLoader.csproj", "{18C5E79C-CD67-47AF-9E1F-B336CEC2EE55}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTicketWebJob", "..\SimpleTicketWebJob\SimpleTicketWebJob.csproj", "{C8E32B56-7E22-405B-9DC8-289B7C9CD224}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBusDataLoader", "ServiceBusDataLoader\ServiceBusDataLoader.csproj", "{18C5E79C-CD67-47AF-9E1F-B336CEC2EE55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
