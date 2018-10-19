@@ -23,8 +23,6 @@ namespace ServiceBusDataLoader
 
         public void Run()
         {
-            var keyvaultManager = new KeyVaultManager("https://azured365demo-kv.vault.azure.net/", "", "");
-
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             var messages = GenerateRandomContactMessages();

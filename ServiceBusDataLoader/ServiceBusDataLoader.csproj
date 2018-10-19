@@ -95,9 +95,6 @@
     <Compile Include="..\AzureD365DemoWebJob\Utils\Utilities.cs">
       <Link>Utils\Utilities.cs</Link>
     </Compile>
-    <Compile Include="..\AzureD365DemoWebJob\Utils\KeyVaultManager.cs">
-      <Link>Utils\KeyVaultManager.cs</Link>
-    </Compile>
     <Compile Include="ContactLoader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

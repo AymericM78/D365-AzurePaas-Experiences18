@@ -221,7 +221,6 @@
     <Compile Include="MessageProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\KeyVaultManager.cs" />
     <Compile Include="Utils\MessageProcessorBase.cs" />
     <Compile Include="Utils\Utilities.cs" />
   </ItemGroup>
