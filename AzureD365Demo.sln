@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureD365DemoWebJob", "Azur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBusDataLoader", "ServiceBusDataLoader\ServiceBusDataLoader.csproj", "{18C5E79C-CD67-47AF-9E1F-B336CEC2EE55}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{6E5997C4-17F9-4540-8D3F-AE05B5C57A90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureD365Demo.CRM.Monitoring.Console", "AzureD365Demo.Monitoring.Console\AzureD365Demo.CRM.Monitoring.Console.csproj", "{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,13 +25,16 @@ Global
 		{18C5E79C-CD67-47AF-9E1F-B336CEC2EE55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18C5E79C-CD67-47AF-9E1F-B336CEC2EE55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18C5E79C-CD67-47AF-9E1F-B336CEC2EE55}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C8E32B56-7E22-405B-9DC8-289B7C9CD224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C8E32B56-7E22-405B-9DC8-289B7C9CD224}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C8E32B56-7E22-405B-9DC8-289B7C9CD224}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C8E32B56-7E22-405B-9DC8-289B7C9CD224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721} = {6E5997C4-17F9-4540-8D3F-AE05B5C57A90}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5DC93A8-EB45-4995-89D2-BE32BCF31417}
