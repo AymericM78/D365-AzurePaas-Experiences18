@@ -9,6 +9,10 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
             PrintHeader();
             var countContacts = AskForHowManyContacts();
             new ContactLoader(countContacts).Run();
+
+            // TODO . When the job reach the end 
+            //    => Open AzureD365Demo.CRM.Monitoring.Console with countContacts as parameter
+
             System.Console.ReadKey();
         }
 
