@@ -5,23 +5,35 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
+using AzureD365DemoWebJob.Utils;
 
 namespace AzureD365Demo.ServiceBus.Loader.Console
 {
     internal class ContactLoader
     {
-        const string QueueSas = "Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=Default;SharedAccessKey=TO_BE_DEFINED;EntityPath=contact";
+        private const string ContactCountSentMessage = "Contacts envoyés dans le service bus";
+        // TODO : In app.config 
+        private const string QueueSas = "Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=Default;SharedAccessKey=TO_BE_DEFINED;EntityPath=contact";
         private int contactsExpected;
-        private Stopwatch stopWatch => new Stopwatch();
+
+        private Stopwatch stopWatch;
         public ContactLoader(int contactsExpected)
         {
             this.contactsExpected = contactsExpected;
+            ServicePointManager.DefaultConnectionLimit = 20;
+            ServicePointManager.Expect100Continue = false;
+            ServicePointManager.UseNagleAlgorithm = false;
+            ThreadPool.SetMinThreads(10, 10);
         }
 
         public void Run()
         {
+            stopWatch = new Stopwatch();
             var messages = GenerateRandomContactMessages();
+            ConsoleHelper.DrawTextProgressBar(ContactCountSentMessage, 0, contactsExpected);
             SendMessages(messages);
             PrintEndProcess();
         }
@@ -45,36 +57,47 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
                 messages.Add(message);
             }
             stopWatch.Stop();
-            System.Console.WriteLine($"{messages.Count} contacts generated in {stopWatch.Elapsed.ToString("G")}");
+            System.Console.WriteLine($"{messages.Count} contacts générés en {stopWatch.Elapsed.TotalSeconds} secondes");
             stopWatch.Reset();
 
             return messages;
         }
 
-        private void SendMessages(IList<BrokeredMessage> messages)
+        private static int CountContactsSent;
+        private void SendMessages(IList<BrokeredMessage> brokeredMessages)
         {
+            stopWatch.Reset();
             stopWatch.Start();
             var client = QueueClient.CreateFromConnectionString(QueueSas);
-            //var chunks = messages.ChunkBy(bm => bm.Size, MaxServiceBusMessages);
-            //foreach (var chunk in chunks)
-            //{
-            //    client.SendBatch(chunk);
-            //}
+            var chunks = brokeredMessages.ChunkBy(bm => bm.Size, 2000);
 
-            var options = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = 500
-            };
-            Parallel.ForEach(messages, options, (message) =>
-            {
-                client.Send(message);
-            });
+            Parallel.ForEach(chunks, new ParallelOptions() { MaxDegreeOfParallelism = 100 }, (messages) =>
+             {
+                 client.SendBatch(messages);
+                 Interlocked.Add(ref CountContactsSent, messages.Count);
+                 messages.ForEach(e =>
+                 {
+                     e.Dispose();
+                 });
+                 DrawProgressBar();
+             });
 
             stopWatch.Stop();
-            System.Console.WriteLine($"{messages.Count} contacts sent in {stopWatch.Elapsed.ToString("G")}");
+
+            System.Console.WriteLine();
+            ConsoleHelper.Log($"{brokeredMessages.Count} contacts envoyés en {stopWatch.Elapsed.TotalSeconds} secondes", ConsoleHelper.LogStatus.Success);
 
         }
 
+        private void DrawProgressBar(bool force = false)
+        {
+            lock (lockDrawingMessage)
+                if (0 == CountContactsSent % 1000 || force)
+                    ConsoleHelper.DrawTextProgressBar(ContactCountSentMessage, CountContactsSent,
+                        contactsExpected);
+        }
+
+        private object lockDrawingMessage = new object();
         /// <summary>
         /// Generate a random contact message in json
         /// </summary>

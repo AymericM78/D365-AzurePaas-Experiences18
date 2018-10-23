@@ -11,7 +11,7 @@ namespace AzureD365Demo.Monitoring.Console
         private static int expectedCount = 0;
         private const string ExitMessage = "Appuyez sur une touche pour arrêter la vérification avec le CRM.";
         private const string ProgressMessage = "Contacts dans mon CRM";
-        private const string CoreCountStoppedMessage = "The process has been stopped by the user !";
+        private const string CoreCountStoppedMessage = "Arrêt de la vérification au CRM !";
 
         static void Main(string[] args)
         {

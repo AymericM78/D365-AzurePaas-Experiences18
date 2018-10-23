@@ -27,7 +27,7 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
 
         private static int AskForHowManyContacts()
         {
-            ConsoleHelper.Log("How many contacts do you want to load ? ", withoutReturn:true, status: ConsoleHelper.LogStatus.Information);
+            ConsoleHelper.Log("Combien de contact souhaitez-vous charger ? ", withoutReturn:true, status: ConsoleHelper.LogStatus.Information);
             var line = System.Console.ReadLine();
             var entry = int.Parse(line);
             return entry;

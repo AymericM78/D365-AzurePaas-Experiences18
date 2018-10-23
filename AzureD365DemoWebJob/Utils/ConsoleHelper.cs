@@ -29,7 +29,7 @@ namespace AzureD365DemoWebJob.Utils
             Console.CursorLeft = totalChunks + 5;
             Console.BackgroundColor = ConsoleColor.Black;
 
-            var output = progress + "out of " + total;
+            var output = progress + " / " + total + " - ";
             Console.Write(output.PadRight(15) + stepDescription); //pad the output so when changing from 3 to 4 digits we avoid text shifting
         }
 
