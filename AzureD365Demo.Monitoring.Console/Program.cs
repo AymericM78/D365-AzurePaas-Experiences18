@@ -15,6 +15,8 @@ namespace AzureD365Demo.Monitoring.Console
 
         static void Main(string[] args)
         {
+            PrintHeader();
+
             if (args.Length != 0)
             {
                 var rawExpectedCount = args[0];
@@ -83,6 +85,14 @@ namespace AzureD365Demo.Monitoring.Console
             }
         }
 
+        private static void PrintHeader()
+        {
+            System.Console.Clear();
+            ConsoleHelper.Log("=========================================");
+            ConsoleHelper.Log("Microsoft MSExperiences 2018");
+            ConsoleHelper.Log("Session : Etendre les capacités de Dynamics 365 avec les Services PaaS dans Azure", ConsoleHelper.LogStatus.Verbose);
+            ConsoleHelper.Log("=========================================");
+        }
 
     }
 }
