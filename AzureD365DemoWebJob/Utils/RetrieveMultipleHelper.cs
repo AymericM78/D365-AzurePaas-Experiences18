@@ -1,20 +1,21 @@
-﻿using System.Configuration;
-using System.Net;
+﻿using System.Net;
+using Microsoft.Pfe.Xrm;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
-using Microsoft.Xrm.Tooling.Connector;
 
-namespace AzureD365Demo.Monitoring.Console
+namespace AzureD365DemoWebJob.Utils
 {
-    
+
     public static class RetrieveMultipleHelper
     {
         private static IOrganizationService GetProxy()
         {
+            // If you're using an old version of .NET this will enable TLS 1.2
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            var client = new CrmServiceClient(ConfigurationManager.ConnectionStrings["Xrm"].ConnectionString);
-            return client.OrganizationServiceProxy;
+            var settings = new JobSettings();
+            var serverUri = XrmServiceUriFactory.CreateOnlineOrganizationServiceUri(settings.CrmOrganizationName, CrmOnlineRegion.EMEA);
+            var organizationServiceManager = new OrganizationServiceManager(serverUri, settings.CrmUserName, settings.CrmUserPassword);
+            return organizationServiceManager.GetProxy();
         }
 
         public static EntityCollection RetrieveMultipleAllPages(QueryExpression pagequery)
@@ -29,7 +30,7 @@ namespace AzureD365Demo.Monitoring.Console
 
             // Create the query expression and add condition.
             // Assign the pageinfo properties to the query expression.
-            pagequery.PageInfo = new PagingInfo {Count = queryCount, PageNumber = pageNumber, PagingCookie = null};
+            pagequery.PageInfo = new PagingInfo { Count = queryCount, PageNumber = pageNumber, PagingCookie = null };
 
             // The current paging cookie. When retrieving the first page, 
             // pagingCookie should be null.

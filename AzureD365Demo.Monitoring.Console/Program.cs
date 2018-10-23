@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading;
+using AzureD365DemoWebJob.Utils;
 using Microsoft.Xrm.Sdk.Query;
 
 namespace AzureD365Demo.Monitoring.Console
@@ -8,6 +9,10 @@ namespace AzureD365Demo.Monitoring.Console
     class Program
     {
         private static int expectedCount = 0;
+        private const string ExitMessage = "Appuyez sur une touche pour arrêter la vérification avec le CRM.";
+        private const string ProgressMessage = "Contacts dans mon CRM";
+        private const string CoreCountStoppedMessage = "The process has been stopped by the user !";
+
         static void Main(string[] args)
         {
             if (args.Length != 0)
@@ -15,16 +20,22 @@ namespace AzureD365Demo.Monitoring.Console
                 var rawExpectedCount = args[0];
                 expectedCount = int.Parse(rawExpectedCount);
             }
-            
-            System.Console.WriteLine("Press any button to exit");
+
+            System.Console.WriteLine(ExitMessage);
             var bg = InitializeBackgroundWorker();
-            DrawTextProgressBar("Contacts dans mon CRM", 0, expectedCount);
+
+            ConsoleHelper.DrawTextProgressBar(ProgressMessage, 0, expectedCount);
             bg.RunWorkerAsync();
+            System.Console.ReadKey(true);
+            System.Console.WriteLine();
+            bg.CancelAsync();
+            ConsoleHelper.Log(CoreCountStoppedMessage, ConsoleHelper.LogStatus.Warning);
             System.Console.ReadKey();
         }
 
         public static QueryExpression GetContacts()
         {
+            // Need to use Count in Fetch xml ? 
             return new QueryExpression("contact")
             {
                 ColumnSet = new ColumnSet("contactid"),
@@ -34,14 +45,15 @@ namespace AzureD365Demo.Monitoring.Console
 
         public static BackgroundWorker InitializeBackgroundWorker()
         {
-            BackgroundWorker bg = new BackgroundWorker();
+            var bg = new BackgroundWorker();
             bg.DoWork += Bg_DoWork;
             bg.ProgressChanged += Bg_ProgressChanged;
             bg.WorkerReportsProgress = true;
+            bg.WorkerSupportsCancellation = true;
             return bg;
         }
 
-        //Fake
+        //Fake : Need to remove it when the whole process will be ok 
         private static int Count;
 
         private static void CoreCount(BackgroundWorker worker, DoWorkEventArgs e)
@@ -49,6 +61,7 @@ namespace AzureD365Demo.Monitoring.Console
             if (worker.CancellationPending)
             {
                 e.Cancel = true;
+                return;
             }
             var count = RetrieveMultipleHelper.RetrieveMultipleAllPages(GetContacts());
             Count += count.Entities.Count;
@@ -57,46 +70,19 @@ namespace AzureD365Demo.Monitoring.Console
 
         private static void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            DrawTextProgressBar("Contacts dans mon CRM", e.ProgressPercentage, expectedCount);
+            if (!((BackgroundWorker)sender).CancellationPending)
+                ConsoleHelper.DrawTextProgressBar(ProgressMessage, e.ProgressPercentage, expectedCount);
         }
 
         private static void Bg_DoWork(object sender, DoWorkEventArgs e)
         {
             for (int i = 0; i < 10; i++)
             {
-                CoreCount((BackgroundWorker) sender, e);
+                CoreCount((BackgroundWorker)sender, e);
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
         }
 
-        public static void DrawTextProgressBar(string stepDescription, int progress, int total)
-        {
-            int totalChunks = 30;
 
-            //draw empty progress bar
-            System.Console.CursorLeft = 0;
-            System.Console.Write("["); //start
-            System.Console.CursorLeft = totalChunks + 1;
-            System.Console.Write("]"); //end
-            System.Console.CursorLeft = 1;
-
-            double pctComplete = Convert.ToDouble(progress) / total;
-            int numChunksComplete = Convert.ToInt16(totalChunks * pctComplete);
-
-            //draw completed chunks
-            System.Console.BackgroundColor = ConsoleColor.Green;
-            System.Console.Write("".PadRight(numChunksComplete));
-
-            //draw incomplete chunks
-            System.Console.BackgroundColor = ConsoleColor.Gray;
-            System.Console.Write("".PadRight(totalChunks - numChunksComplete));
-
-            //draw totals
-            System.Console.CursorLeft = totalChunks + 5;
-            System.Console.BackgroundColor = ConsoleColor.Black;
-
-            string output = progress.ToString() + " of " + total.ToString();
-            System.Console.Write(output.PadRight(15) + stepDescription); //pad the output so when changing from 3 to 4 digits we avoid text shifting
-        }
     }
 }

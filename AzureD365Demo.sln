@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{6E5997C4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureD365Demo.CRM.Monitoring.Console", "AzureD365Demo.Monitoring.Console\AzureD365Demo.CRM.Monitoring.Console.csproj", "{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureD365Demo.ServiceBus.Loader.Console", "AzureD365Demo.ServiceBus.Loader.Console\AzureD365Demo.ServiceBus.Loader.Console.csproj", "{BA9209D3-2802-43F8-A559-1F39B1E957A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,12 +31,17 @@ Global
 		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA9209D3-2802-43F8-A559-1F39B1E957A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA9209D3-2802-43F8-A559-1F39B1E957A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA9209D3-2802-43F8-A559-1F39B1E957A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA9209D3-2802-43F8-A559-1F39B1E957A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{226B6AF3-44A3-4A41-9E1A-E59BBABB9721} = {6E5997C4-17F9-4540-8D3F-AE05B5C57A90}
+		{BA9209D3-2802-43F8-A559-1F39B1E957A6} = {6E5997C4-17F9-4540-8D3F-AE05B5C57A90}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C5DC93A8-EB45-4995-89D2-BE32BCF31417}
