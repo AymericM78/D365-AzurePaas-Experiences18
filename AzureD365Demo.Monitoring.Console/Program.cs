@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Threading;
 using AzureD365DemoWebJob.Utils;
+using Microsoft.ServiceBus;
 using Microsoft.Xrm.Sdk.Query;
 
 namespace AzureD365Demo.Monitoring.Console
@@ -9,8 +10,10 @@ namespace AzureD365Demo.Monitoring.Console
     class Program
     {
         private static int expectedCount = 0;
+        private static int currentCount = 0;
+
         private const string ExitMessage = "Appuyez sur une touche pour arrêter la vérification avec le CRM.";
-        private const string ProgressMessage = "Contacts dans mon CRM";
+        private const string ProgressMessage = "Contacts restant dans le service bus";
         private const string CoreCountStoppedMessage = "Arrêt de la vérification au CRM !";
 
         static void Main(string[] args)
@@ -25,14 +28,26 @@ namespace AzureD365Demo.Monitoring.Console
 
             System.Console.WriteLine(ExitMessage);
             var bg = InitializeBackgroundWorker();
-
+            expectedCount = (int)MessagesCountInSB();
+            currentCount = expectedCount;
+            ConsoleHelper.Log($"Messages dans le service bus : {expectedCount}");
             ConsoleHelper.DrawTextProgressBar(ProgressMessage, 0, expectedCount);
+
             bg.RunWorkerAsync();
             System.Console.ReadKey(true);
             System.Console.WriteLine();
             bg.CancelAsync();
+
             ConsoleHelper.Log(CoreCountStoppedMessage, ConsoleHelper.LogStatus.Warning);
             System.Console.ReadKey();
+        }
+
+        private static long MessagesCountInSB()
+        {
+            var namespaceManager = NamespaceManager.CreateFromConnectionString("Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Po+96QPh2OKyazB8NmaFC7TBKyd/fs8KrQXS0Lf9c1E=");
+            var queueDescription = namespaceManager.GetQueue("contact");
+            long activeMessageCount = queueDescription.MessageCountDetails.ActiveMessageCount;
+            return activeMessageCount;
         }
 
         public static QueryExpression GetContacts()
@@ -65,23 +80,32 @@ namespace AzureD365Demo.Monitoring.Console
                 e.Cancel = true;
                 return;
             }
-            var count = RetrieveMultipleHelper.RetrieveMultipleAllPages(GetContacts());
-            Count += count.Entities.Count;
-            worker.ReportProgress(Count);
+
+            currentCount = (int) MessagesCountInSB();
+            worker.ReportProgress(currentCount);
         }
 
+        private static int updateContactsFromCRM = 0;
         private static void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            if (!((BackgroundWorker)sender).CancellationPending)
-                ConsoleHelper.DrawTextProgressBar(ProgressMessage, e.ProgressPercentage, expectedCount);
+            if (!((BackgroundWorker) sender).CancellationPending)
+            {
+                if (++updateContactsFromCRM % 12 == 0)
+                {
+                    var extraInfo =
+                        $" (Info : {RetrieveMultipleHelper.RetrieveMultipleAllPages(GetContacts()).Entities.Count} contacts enregistrés)";
+                    ConsoleHelper.DrawTextProgressBar(ProgressMessage + $" {extraInfo}", currentCount, expectedCount);
+                }
+            }
         }
 
         private static void Bg_DoWork(object sender, DoWorkEventArgs e)
         {
-            for (int i = 0; i < 10; i++)
+            while (currentCount != 0)
             {
+                currentCount = (int)MessagesCountInSB();
                 CoreCount((BackgroundWorker)sender, e);
-                Thread.Sleep(TimeSpan.FromSeconds(1));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
             }
         }
 

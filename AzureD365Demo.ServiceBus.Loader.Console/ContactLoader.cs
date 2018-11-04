@@ -16,7 +16,7 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
     {
         private const string ContactCountSentMessage = "Contacts envoyés dans le service bus";
         // TODO : In app.config 
-        private const string QueueSas = "Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=Default;SharedAccessKey=TO_BE_DEFINED;EntityPath=contact";
+        private const string QueueSas = "Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=Default;SharedAccessKey=9OGM7G24LugPdRVAsN7jsaIm6xLWJPUklJKu8OK5YGk=;EntityPath=contact";
         private int contactsExpected;
 
         private Stopwatch stopWatch;

@@ -13,8 +13,7 @@ namespace AzureD365DemoWebJob
 {
     public class MessageProcessor : MessageProcessorBase
     {
-        const int MessageMaxNumber = 50000;
-
+        
         /// <summary>
         /// Process messages in queue and push them into D365
         /// </summary>
@@ -24,10 +23,10 @@ namespace AzureD365DemoWebJob
             while (true)
             {
                 var messages = GetMessages();
-                var requests = TransformMessagesToRequests(messages);
+                var requests = TransformMessagesToRequests(messages).ToList();
                 SendRequests(requests);
 
-                Thread.Sleep(30 * 1000);
+                Thread.Sleep(1 * 1000);
             }
         }
 
@@ -37,8 +36,8 @@ namespace AzureD365DemoWebJob
         /// <returns></returns>
         private IEnumerable<BrokeredMessage> GetMessages()
         {
-            var messages = ContactQueueClient.ReceiveBatch(MessageMaxNumber, TimeSpan.FromSeconds(5)).ToList();
-            if (messages.Count > 0)
+            var messages = ContactQueueClient.ReceiveBatch(MessageMax, TimeSpan.FromSeconds(5)).ToList();
+            if (messages.Count > 0) 
             {
                 ContactQueueClient.CompleteBatch(messages.Select(m => m.LockToken));
             }
@@ -74,62 +73,75 @@ namespace AzureD365DemoWebJob
         /// <summary>
         /// Send SDK request to D365 endpoint
         /// </summary>
-        private void SendRequests(IEnumerable<OrganizationRequest> requests)
+        private void SendRequests(List<OrganizationRequest> requests)
         {
-            Parallel.ForEach(
-                    requests, // these are your items to process - should be many many thousands in here 
-                    new ParallelOptions()
-                    {
-                        MaxDegreeOfParallelism = JobSettings.ThreadNumber
-                    },
-                    () =>
-                    {
-                        // partition initialize // localInit - called once per Task.
-                        // get the proxy to use in the thread parition - this creates ONE proxy "per thread"
-                        // that proxy is then re-used inside of that ONE thread 
-                        var threadLocalProxy = OrganizationServiceManager.GetProxy();
+            //Parallel.ForEach(
+            //        requests, // these are your items to process - should be many many thousands in here 
+            //        new ParallelOptions()
+            //        {
+            //            MaxDegreeOfParallelism = JobSettings.ThreadNumber
+            //        },
+            //        () =>
+            //        {
+            //            // partition initialize // localInit - called once per Task.
+            //            // get the proxy to use in the thread parition - this creates ONE proxy "per thread"
+            //            // that proxy is then re-used inside of that ONE thread 
+            //            var threadLocalProxy = OrganizationServiceManager.GetProxy();
 
-                        // you can log thread parition being opened/created 
-                        // HOWEVER use appinsights or something like ent lib for threadsafety
-                        // do not log to text otherwise it *will* slow you down a lot 
+            //            // you can log thread parition being opened/created 
+            //            // HOWEVER use appinsights or something like ent lib for threadsafety
+            //            // do not log to text otherwise it *will* slow you down a lot 
 
-                        // return the context so the thread Body can use the context 
-                        return new
-                        {
-                            threadLocalProxy
-                        };
-                    },
-                    (item, loopState, context) =>
-                    {
-                        // partition body - put the 'guts' of your operation in here 
-                        // ensure this method is one-off and all it's own 'thing' and doesn't share resources 
-                        try
-                        {
-                            var response = context.threadLocalProxy.Execute(item);
-                            // TODO : transform response into app insight metrics
-                            LogEvent(response.ResponseName, null, this.JobName);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogException(ex, new Dictionary<string, string>(), this.JobName);
-                        }
+            //            // return the context so the thread Body can use the context 
+            //            return new
+            //            {
+            //                threadLocalProxy
+            //            };
+            //        },
+            //        (item, loopState, context) =>
+            //        {
+            //            // partition body - put the 'guts' of your operation in here 
+            //            // ensure this method is one-off and all it's own 'thing' and doesn't share resources 
+            //            try
+            //            {
+            //                var response = context.threadLocalProxy.Execute(item);
+            //                // TODO : transform response into app insight metrics
+            //                LogEvent(response.ResponseName, null, this.JobName);
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                LogException(ex, new Dictionary<string, string>(), this.JobName);
+            //            }
 
-                        // any and all current or downstream logging *must* be threadsafe and multi-thread optimized 
-                        // use appinsights or ent lib to log so that it doesn't block any other threads 
-                        // if you hit thread contention in logging it will slow down your execution greatly 
+            //            // any and all current or downstream logging *must* be threadsafe and multi-thread optimized 
+            //            // use appinsights or ent lib to log so that it doesn't block any other threads 
+            //            // if you hit thread contention in logging it will slow down your execution greatly 
 
-                        // return the context to be re-used or to be 'closed' 
-                        return context;
-                    },
-                    (context) =>
-                    {
-                        // final method per parition / task
-                        // this is only called when the thread partition is being shut down / closed / completed
-                        context.threadLocalProxy.Dispose();
-                    });
+            //            // return the context to be re-used or to be 'closed' 
+            //            return context;
+            //        },
+            //        (context) =>
+            //        {
+            //            // final method per parition / task
+            //            // this is only called when the thread partition is being shut down / closed / completed
+            //            context.threadLocalProxy.Dispose();
+            //        });
 
+            var requestsGroups = requests.ChunkBy(requests.Count / 4);
 
-            //var responses = OrganizationServiceManager.ParallelProxy.Execute(requests);
+            Parallel.ForEach(requestsGroups, new ParallelOptions(){ MaxDegreeOfParallelism = 10}, (requestsGroup) =>
+            {
+                var responses = OrganizationServiceManager.ParallelProxy
+                    .Execute<OrganizationRequest, OrganizationResponse>
+                    (
+                        requestsGroup,
+                        (request, ex) => { LogException(ex, new Dictionary<string, string>(), this.JobName); }
+                    );
+                foreach (var response in responses)
+                {
+                    LogEvent(response.ResponseName, null, this.JobName);
+                }
+            });
         }
 
         /// <summary>
@@ -140,7 +152,7 @@ namespace AzureD365DemoWebJob
         public static Entity TransformToEntity(Contact contactJson)
         {
             Entity crmRecord = new Entity("contact");
-            
+
             if (contactJson.birthdate.HasValue)
             {
                 crmRecord[CrmContact.Fields.BirthDate] = contactJson.birthdate.Value;
@@ -160,12 +172,12 @@ namespace AzureD365DemoWebJob
             {
                 crmRecord[CrmContact.Fields.EMailAddress1] = contactJson.emailaddress1;
             }
-            
+
             if (contactJson.firstname.IsJsonPropertyDefined())
             {
                 crmRecord[CrmContact.Fields.FirstName] = contactJson.firstname;
             }
-            
+
             if (contactJson.jobtitle.IsJsonPropertyDefined())
             {
                 crmRecord[CrmContact.Fields.JobTitle] = contactJson.jobtitle;

@@ -27,6 +27,8 @@ namespace AzureD365DemoWebJob
             ApplyConnectionOptimizations();
         }
 
+        protected int MessageMax  => 5000;
+
         /// <summary>
         /// Optimize connection performances
         /// </summary>
@@ -89,7 +91,7 @@ namespace AzureD365DemoWebJob
         private void InitializeQueueClient()
         {
             ContactQueueClient = QueueClient.CreateFromConnectionString(JobSettings.ServiceBusQueueKey, ReceiveMode.PeekLock);
-
+            ContactQueueClient.PrefetchCount = MessageMax; 
             Log($"Queue 'Contact' client initialized!");
         }
 
