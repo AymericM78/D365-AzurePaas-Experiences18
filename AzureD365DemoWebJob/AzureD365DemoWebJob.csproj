@@ -236,17 +236,23 @@
     <Compile Include="Models\Contact.cs" />
     <Compile Include="Models\CrmContact.cs" />
     <Compile Include="Utils\ConsoleHelper.cs" />
+    <Compile Include="Utils\CrmRecordCounter.cs" />
     <Compile Include="Utils\JobSettings.cs" />
     <Compile Include="MessageProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\MessageProcessorBase.cs" />
-    <Compile Include="Utils\RetrieveMultipleHelper.cs" />
     <Compile Include="Utils\Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="ConnectionStrings.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="AppSettings.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\AzureD365Demo-WEB - FTP.pubxml" />

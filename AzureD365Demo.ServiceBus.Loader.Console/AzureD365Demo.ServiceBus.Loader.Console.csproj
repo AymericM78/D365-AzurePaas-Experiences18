@@ -87,11 +87,11 @@
     <Compile Include="..\AzureD365DemoWebJob\Utils\ConsoleHelper.cs">
       <Link>Utils\ConsoleHelper.cs</Link>
     </Compile>
+    <Compile Include="..\AzureD365DemoWebJob\Utils\CrmRecordCounter.cs">
+      <Link>Utils\CrmRecordCounter.cs</Link>
+    </Compile>
     <Compile Include="..\AzureD365DemoWebJob\Utils\JobSettings.cs">
       <Link>Utils\JobSettings.cs</Link>
-    </Compile>
-    <Compile Include="..\AzureD365DemoWebJob\Utils\RetrieveMultipleHelper.cs">
-      <Link>Utils\RetrieveMultipleHelper.cs</Link>
     </Compile>
     <Compile Include="..\AzureD365DemoWebJob\Utils\Utilities.cs">
       <Link>Utils\Utilities.cs</Link>
@@ -102,6 +102,14 @@
     <Compile Include="Utils\DataRandomizer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\AzureD365DemoWebJob\AppSettings.config">
+      <Link>AppSettings.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\AzureD365DemoWebJob\ConnectionStrings.config">
+      <Link>ConnectionStrings.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>

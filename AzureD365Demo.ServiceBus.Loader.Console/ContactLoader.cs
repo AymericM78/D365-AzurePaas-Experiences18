@@ -15,18 +15,14 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
     internal class ContactLoader
     {
         private const string ContactCountSentMessage = "Contacts envoyés dans le service bus";
-        // TODO : In app.config 
-        private const string QueueSas = "Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=Default;SharedAccessKey=9OGM7G24LugPdRVAsN7jsaIm6xLWJPUklJKu8OK5YGk=;EntityPath=contact";
+        private string QueueSas;
         private int contactsExpected;
 
         private Stopwatch stopWatch;
-        public ContactLoader(int contactsExpected)
+        public ContactLoader(int contactsExpected, string queueSas)
         {
+            this.QueueSas = queueSas;
             this.contactsExpected = contactsExpected;
-            ServicePointManager.DefaultConnectionLimit = 20;
-            ServicePointManager.Expect100Continue = false;
-            ServicePointManager.UseNagleAlgorithm = false;
-            ThreadPool.SetMinThreads(10, 10);
         }
 
         public void Run()

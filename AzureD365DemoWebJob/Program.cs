@@ -16,7 +16,6 @@ namespace AzureD365DemoWebJob
 
             MessageProcessor messageProcessor = new MessageProcessor();
             messageProcessor.Run();
-            host.RunAndBlock();
         }
     }
 }

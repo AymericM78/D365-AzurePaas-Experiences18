@@ -14,7 +14,7 @@ namespace AzureD365DemoWebJob.Utils
             Console.Write("]"); //end
             Console.CursorLeft = 1;
 
-            var pctComplete = Convert.ToDouble(progress) / total;
+            var pctComplete = (total == 0) ? 0 : Convert.ToDouble(progress) / total;
             var numChunksComplete = Convert.ToInt16(totalChunks * pctComplete);
 
             //draw completed chunks

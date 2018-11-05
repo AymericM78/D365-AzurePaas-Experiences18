@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using AzureD365DemoWebJob;
 using AzureD365DemoWebJob.Utils;
 using Microsoft.Xrm.Sdk.Query;
 
@@ -10,16 +11,24 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
 {
     class Program
     {
+        static JobSettings JobSettings;
+        private static CrmRecordCounter CrmRecordCounter;
+
         static void Main(string[] args)
         {
             PrintHeader();
+            JobSettings = new JobSettings();
+            CrmRecordCounter = new CrmRecordCounter(JobSettings);
+
             // Pre-check -> Contacts in my CRM 
             ConsoleHelper.Log("Nombre de contact dans mon CRM", withoutReturn: true);
-            var previousCount = RetrieveMultipleHelper.RetrieveMultipleAllPages(GetContacts());
-            System.Console.Write(previousCount.Entities.Count);
+            var previousCount = CrmRecordCounter.Execute("contact");
+            System.Console.Write(previousCount);
+            ConsoleHelper.Log("");
 
             var countContacts = AskForHowManyContacts();
-            new ContactLoader(countContacts).Run();
+            var contactLoader = new ContactLoader(countContacts, JobSettings.ServiceBusQueueKey);
+            contactLoader.Run();
             ConsoleHelper.Log("Contacts chargés. Appuyez sur une touche pour quitter.", ConsoleHelper.LogStatus.Success);
             System.Console.ReadKey();
         }
@@ -28,7 +37,7 @@ namespace AzureD365Demo.ServiceBus.Loader.Console
         {
             System.Console.Clear();
             ConsoleHelper.Log("=========================================");
-            ConsoleHelper.Log("Microsoft MSExperiences 2018");
+            ConsoleHelper.Log("Microsoft Experiences 2018");
             ConsoleHelper.Log("Session : Etendre les capacités de Dynamics 365 avec les Services PaaS dans Azure", ConsoleHelper.LogStatus.Verbose);
             ConsoleHelper.Log("=========================================");
         }

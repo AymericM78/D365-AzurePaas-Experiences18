@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading;
+using AzureD365DemoWebJob;
 using AzureD365DemoWebJob.Utils;
 using Microsoft.ServiceBus;
 using Microsoft.Xrm.Sdk.Query;
@@ -9,16 +10,20 @@ namespace AzureD365Demo.Monitoring.Console
 {
     class Program
     {
+        static JobSettings JobSettings;
         private static int expectedCount = 0;
         private static int currentCount = 0;
 
         private const string ExitMessage = "Appuyez sur une touche pour arrêter la vérification avec le CRM.";
         private const string ProgressMessage = "Contacts restant dans le service bus";
         private const string CoreCountStoppedMessage = "Arrêt de la vérification au CRM !";
+        private static CrmRecordCounter CrmRecordCounter;
 
         static void Main(string[] args)
         {
             PrintHeader();
+            JobSettings = new JobSettings();
+            CrmRecordCounter = new CrmRecordCounter(JobSettings);
 
             if (args.Length != 0)
             {
@@ -44,7 +49,7 @@ namespace AzureD365Demo.Monitoring.Console
 
         private static long MessagesCountInSB()
         {
-            var namespaceManager = NamespaceManager.CreateFromConnectionString("Endpoint=sb://azured365demo-asb.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Po+96QPh2OKyazB8NmaFC7TBKyd/fs8KrQXS0Lf9c1E=");
+            var namespaceManager = NamespaceManager.CreateFromConnectionString(JobSettings.ServiceBusNamespaceKey);
             var queueDescription = namespaceManager.GetQueue("contact");
             long activeMessageCount = queueDescription.MessageCountDetails.ActiveMessageCount;
             return activeMessageCount;
@@ -86,14 +91,16 @@ namespace AzureD365Demo.Monitoring.Console
         }
 
         private static int updateContactsFromCRM = 0;
+        private static int ContactCount = 0;
         private static void Bg_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             if (!((BackgroundWorker) sender).CancellationPending)
             {
                 if (++updateContactsFromCRM % 12 == 0)
                 {
+                    ContactCount += CrmRecordCounter.Execute("contact");
                     var extraInfo =
-                        $" (Info : {RetrieveMultipleHelper.RetrieveMultipleAllPages(GetContacts()).Entities.Count} contacts enregistrés)";
+                        $" (Info : {ContactCount} contacts enregistrés)";
                     ConsoleHelper.DrawTextProgressBar(ProgressMessage + $" {extraInfo}", currentCount, expectedCount);
                 }
             }
@@ -113,7 +120,7 @@ namespace AzureD365Demo.Monitoring.Console
         {
             System.Console.Clear();
             ConsoleHelper.Log("=========================================");
-            ConsoleHelper.Log("Microsoft MSExperiences 2018");
+            ConsoleHelper.Log("Microsoft Experiences 2018");
             ConsoleHelper.Log("Session : Etendre les capacités de Dynamics 365 avec les Services PaaS dans Azure", ConsoleHelper.LogStatus.Verbose);
             ConsoleHelper.Log("=========================================");
         }

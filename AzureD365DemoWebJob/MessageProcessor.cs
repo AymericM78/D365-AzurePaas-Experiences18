@@ -23,6 +23,10 @@ namespace AzureD365DemoWebJob
             while (true)
             {
                 var messages = GetMessages();
+                if(messages.Count() == 0)
+                {
+                    break;
+                }
                 var requests = TransformMessagesToRequests(messages).ToList();
                 SendRequests(requests);
 

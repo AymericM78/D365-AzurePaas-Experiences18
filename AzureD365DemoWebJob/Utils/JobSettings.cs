@@ -15,6 +15,10 @@ namespace AzureD365DemoWebJob
         public int ThreadNumber => GetParameterAsInteger("Process.Thread.Number");
 
         public string ServiceBusQueueKey => GetParameter("ServiceBus.Queue.Key");
+        public string ServiceBusNamespaceKey => GetParameter("ServiceBus.Namespace.Key");
+        public string WebJobUrl => GetParameter("WebJob.Url");
+        public string WebJobLogin => GetParameter("WebJob.Login");
+        public string WebJobPwd => GetParameter("WebJob.Pwd");
 
         const string DateFormat = "dd/MM/yyyy";
         static CultureInfo DateProvider = CultureInfo.InvariantCulture;
