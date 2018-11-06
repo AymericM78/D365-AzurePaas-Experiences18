@@ -1,5 +1,4 @@
-﻿using AzureD365DemoWebJob.Models;
-using Microsoft.Pfe.Xrm;
+﻿using Microsoft.Pfe.Xrm;
 using Microsoft.ServiceBus.Messaging;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;

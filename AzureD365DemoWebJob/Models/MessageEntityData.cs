@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AzureD365DemoWebJob.Models
+namespace AzureD365DemoWebJob
 {
     public class MessageEntityData
     {
