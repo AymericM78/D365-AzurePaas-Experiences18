@@ -19,6 +19,7 @@ namespace AzureD365Demo.App
         JobSettings JobSettings;
         CrmRecordCounter CrmRecordCounter;
         private Stopwatch StopWatch = new Stopwatch();
+        int PreviousMessageCount = 0;
 
         public MainForm()
         {
@@ -144,6 +145,16 @@ namespace AzureD365Demo.App
                 telephone2 = DataRandomizer.GetRandomPhoneNumber()
             };
 
+            var errorRatio = DataRandomizer.GetRandomInt(1, 10);
+            if(errorRatio == 1)
+            {
+                contact.jobtitle = DataRandomizer.GetRandomString(110, 120);
+            }
+            if (errorRatio == 7)
+            {
+                contact.birthdate = DateTime.MinValue;
+            }
+
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
@@ -197,6 +208,8 @@ namespace AzureD365Demo.App
             var queueDescription = namespaceManager.GetQueue("contact");
             int activeMessageCount = (int) queueDescription.MessageCountDetails.ActiveMessageCount;
 
+
+
             worker.ReportProgress(activeMessageCount);
         }
 
@@ -218,6 +231,12 @@ namespace AzureD365Demo.App
             pgbServiceBus.Value = (int) progress;
             lblSbMessageCount.Text = e.ProgressPercentage.ToString();
             lblProgressValue.Text = $"{progress}%";
+            
+            if (PreviousMessageCount > 0 && activeMessageCount == 0)
+            {
+                Log($"Tous les contacts ont été chargés dans D365 !");
+            }
+            PreviousMessageCount = e.ProgressPercentage;
 
             Application.DoEvents();
         }
@@ -268,6 +287,7 @@ namespace AzureD365Demo.App
             }
             int crmContactCount = e.ProgressPercentage;
             lblCrmContactCount.Text = crmContactCount.ToString();
+
             Application.DoEvents();
         }
         
