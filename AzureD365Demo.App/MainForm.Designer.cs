@@ -49,11 +49,15 @@
             this.bgWorkerServiceBus = new System.ComponentModel.BackgroundWorker();
             this.bgWorkerCrmCounter = new System.ComponentModel.BackgroundWorker();
             this.btnStartWebJob = new System.Windows.Forms.Button();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pictureBox3 = new System.Windows.Forms.PictureBox();
             this.grpLoad.SuspendLayout();
             this.grpSb.SuspendLayout();
             this.grpCrm.SuspendLayout();
             this.grpConsole.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.SuspendLayout();
             // 
             // grpLoad
@@ -92,9 +96,9 @@
             // btnLoad
             // 
             this.btnLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLoad.Location = new System.Drawing.Point(342, 57);
+            this.btnLoad.Location = new System.Drawing.Point(345, 180);
             this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(93, 234);
+            this.btnLoad.Size = new System.Drawing.Size(93, 111);
             this.btnLoad.TabIndex = 2;
             this.btnLoad.Text = " > ";
             this.btnLoad.UseVisualStyleBackColor = true;
@@ -259,13 +263,33 @@
             // btnStartWebJob
             // 
             this.btnStartWebJob.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStartWebJob.Location = new System.Drawing.Point(1236, 57);
+            this.btnStartWebJob.Location = new System.Drawing.Point(1236, 180);
             this.btnStartWebJob.Name = "btnStartWebJob";
-            this.btnStartWebJob.Size = new System.Drawing.Size(93, 234);
+            this.btnStartWebJob.Size = new System.Drawing.Size(93, 111);
             this.btnStartWebJob.TabIndex = 3;
             this.btnStartWebJob.Text = " > ";
             this.btnStartWebJob.UseVisualStyleBackColor = true;
             this.btnStartWebJob.Click += new System.EventHandler(this.btnStartWebJob_Click);
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Location = new System.Drawing.Point(342, 45);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(100, 100);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox2.TabIndex = 7;
+            this.pictureBox2.TabStop = false;
+            // 
+            // pictureBox3
+            // 
+            this.pictureBox3.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox3.Image")));
+            this.pictureBox3.Location = new System.Drawing.Point(1229, 45);
+            this.pictureBox3.Name = "pictureBox3";
+            this.pictureBox3.Size = new System.Drawing.Size(100, 100);
+            this.pictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox3.TabIndex = 8;
+            this.pictureBox3.TabStop = false;
             // 
             // MainForm
             // 
@@ -273,12 +297,15 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(1660, 756);
+            this.Controls.Add(this.pictureBox3);
+            this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.btnStartWebJob);
             this.Controls.Add(this.grpConsole);
             this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.grpCrm);
             this.Controls.Add(this.grpSb);
             this.Controls.Add(this.grpLoad);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "Microsoft Experiences 2018 : Etendre les capacités de Dynamics 365 avec les Servi" +
     "ces PaaS dans Azure";
@@ -292,6 +319,8 @@
             this.grpConsole.ResumeLayout(false);
             this.grpConsole.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -318,6 +347,8 @@
         private System.Windows.Forms.Label lblMessageInBus;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnStartWebJob;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.PictureBox pictureBox3;
     }
 }
 
