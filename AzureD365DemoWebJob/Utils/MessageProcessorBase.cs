@@ -27,7 +27,7 @@ namespace AzureD365DemoWebJob
             ApplyConnectionOptimizations();
         }
 
-        protected int MessageMax  => 5000;
+        protected int MessageMax => 1500;
 
         /// <summary>
         /// Optimize connection performances
@@ -77,11 +77,9 @@ namespace AzureD365DemoWebJob
         /// </summary>
         private void InitializeOrganizationServiceManager()
         {
-            // If you're using an old version of .NET this will enable TLS 1.2
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;            
-
             var serverUri = XrmServiceUriFactory.CreateOnlineOrganizationServiceUri(JobSettings.CrmOrganizationName, CrmOnlineRegion.EMEA);
             OrganizationServiceManager = new OrganizationServiceManager(serverUri, JobSettings.CrmUserName, JobSettings.CrmUserPassword);
+            OrganizationServiceManager.ParallelProxy.MaxDegreeOfParallelism = JobSettings.ThreadNumber;
             Log($"Organization service initialized to {serverUri.ToString()} with user {JobSettings.CrmUserName}!");
         }
 
@@ -90,8 +88,8 @@ namespace AzureD365DemoWebJob
         /// </summary>
         private void InitializeQueueClient()
         {
-            ContactQueueClient = QueueClient.CreateFromConnectionString(JobSettings.ServiceBusQueueKey, ReceiveMode.PeekLock);
-            ContactQueueClient.PrefetchCount = MessageMax; 
+            ContactQueueClient = QueueClient.CreateFromConnectionString(JobSettings.ServiceBusQueueKey, ReceiveMode.ReceiveAndDelete);
+            ContactQueueClient.PrefetchCount = 10000;
             Log($"Queue 'Contact' client initialized!");
         }
 
@@ -178,13 +176,43 @@ namespace AzureD365DemoWebJob
         /// Define default properties based on configuration for App Insights logging
         /// </summary>
         /// <returns></returns>
-        private Dictionary<string, string> GetDefaultProperties()
+        private IDictionary<string, string> GetDefaultProperties()
         {
-            return new Dictionary<string, string>()
+            var globalSettings = new Dictionary<string, string>()
             {
-                { "Default", "Cool" }
+                { "Crm.Organization.Name", JobSettings.CrmOrganizationName },
+                { "Crm.User.Name", JobSettings.CrmUserName },
             };
+            var serviceBusProperties = ExtractQueueConnectionStringInformations();
+            foreach (var item in serviceBusProperties)
+            {
+                globalSettings.Add(item.Key, item.Value);
+            }
+            return globalSettings;
         }
-
+        
+        /// <summary>
+        /// Extract informations from Queue Connection String
+        /// </summary>
+        /// <returns></returns>
+        private IDictionary<string, string> ExtractQueueConnectionStringInformations()
+        {
+            var queueConnectionInformations = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(JobSettings.ServiceBusQueueKey))
+            {
+                var parameters = JobSettings.ServiceBusQueueKey.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var parameter in parameters)
+                {
+                    var data = parameter.Split('=');
+                    if (data.Length == 2)
+                    {
+                        string key = data[0];
+                        string value = data[1];
+                        queueConnectionInformations.Add($"ServiceBus.{key}", value);
+                    }
+                }
+            }
+            return queueConnectionInformations;
+        }
     }
 }

@@ -235,6 +235,7 @@
   <ItemGroup>
     <Compile Include="Models\Contact.cs" />
     <Compile Include="Models\CrmContact.cs" />
+    <Compile Include="Models\MessageEntityData.cs" />
     <Compile Include="Utils\ConsoleHelper.cs" />
     <Compile Include="Utils\CrmRecordCounter.cs" />
     <Compile Include="Utils\JobSettings.cs" />

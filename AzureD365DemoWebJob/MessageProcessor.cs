@@ -1,4 +1,5 @@
-﻿using Microsoft.Pfe.Xrm;
+﻿using AzureD365DemoWebJob.Models;
+using Microsoft.Pfe.Xrm;
 using Microsoft.ServiceBus.Messaging;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
@@ -13,7 +14,8 @@ namespace AzureD365DemoWebJob
 {
     public class MessageProcessor : MessageProcessorBase
     {
-        
+        ConcurrentBag<MessageEntityData> MessagesEntityData = new ConcurrentBag<MessageEntityData>();
+
         /// <summary>
         /// Process messages in queue and push them into D365
         /// </summary>
@@ -23,14 +25,14 @@ namespace AzureD365DemoWebJob
             while (true)
             {
                 var messages = GetMessages();
-                if(messages.Count() == 0)
+                if (messages.Count() == 0)
                 {
                     break;
                 }
                 var requests = TransformMessagesToRequests(messages).ToList();
                 SendRequests(requests);
 
-                Thread.Sleep(1 * 1000);
+                Thread.Sleep(50);
             }
         }
 
@@ -40,11 +42,8 @@ namespace AzureD365DemoWebJob
         /// <returns></returns>
         private IEnumerable<BrokeredMessage> GetMessages()
         {
+            // Retrieve multiple messages from queue (500 or less)
             var messages = ContactQueueClient.ReceiveBatch(MessageMax, TimeSpan.FromSeconds(5)).ToList();
-            if (messages.Count > 0) 
-            {
-                ContactQueueClient.CompleteBatch(messages.Select(m => m.LockToken));
-            }
             return messages;
         }
 
@@ -54,21 +53,39 @@ namespace AzureD365DemoWebJob
         private IEnumerable<OrganizationRequest> TransformMessagesToRequests(IEnumerable<BrokeredMessage> messages)
         {
             var requests = new ConcurrentBag<OrganizationRequest>();
-            var options = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = JobSettings.ThreadNumber
-            };
 
-            Parallel.ForEach(messages, options, (message) =>
+            Parallel.ForEach(messages, new ParallelOptions() { MaxDegreeOfParallelism = JobSettings.ThreadNumber }, (message) =>
             {
+                // Retrieve message string content
                 var messageContent = message.GetBody<string>();
+
+                // Convert json to contact object (custom class)
                 var contact = JsonHelper.ConvertTo<Contact>(messageContent);
+
+                // Transform custom object to CRM Entity
                 var crmContact = TransformToEntity(contact);
+
+                // Load CRM entity record to a CRM create request
+                var requestId = Guid.NewGuid();
                 var request = new CreateRequest
                 {
-                    Target = crmContact
+                    Target = crmContact,
+                    RequestId = requestId
                 };
                 requests.Add(request);
+
+                // Add information to cache for Application Insights tracking
+                var messageEntityData = new MessageEntityData
+                {
+                    MessageId = message.MessageId,
+                    RecordId = crmContact.Id,
+                    RequestId = requestId
+                };
+                messageEntityData.Properties.Add("Message.Id", message.MessageId);
+                messageEntityData.Properties.Add("Record.Id", crmContact.Id.ToString());
+                messageEntityData.Properties.Add("Request.Id", requestId.ToString());
+                messageEntityData.Properties.Add("Message.Content", messageContent);
+                MessagesEntityData.Add(messageEntityData);
 
             });
             return requests;
@@ -79,72 +96,29 @@ namespace AzureD365DemoWebJob
         /// </summary>
         private void SendRequests(List<OrganizationRequest> requests)
         {
-            //Parallel.ForEach(
-            //        requests, // these are your items to process - should be many many thousands in here 
-            //        new ParallelOptions()
-            //        {
-            //            MaxDegreeOfParallelism = JobSettings.ThreadNumber
-            //        },
-            //        () =>
-            //        {
-            //            // partition initialize // localInit - called once per Task.
-            //            // get the proxy to use in the thread parition - this creates ONE proxy "per thread"
-            //            // that proxy is then re-used inside of that ONE thread 
-            //            var threadLocalProxy = OrganizationServiceManager.GetProxy();
+            // HOW TO : PFE Xrm Core
+            // ===================
+            // https://github.com/seanmcne/XrmCoreLibrary/blob/master/Samples/Microsoft.Pfe.Xrm.Core.Samples/ParallelExecuteSamples.cs
+            // https://github.com/seanmcne/XrmCoreLibrary/blob/master/Documentation/ParallelProxy-Property.md
 
-            //            // you can log thread parition being opened/created 
-            //            // HOWEVER use appinsights or something like ent lib for threadsafety
-            //            // do not log to text otherwise it *will* slow you down a lot 
-
-            //            // return the context so the thread Body can use the context 
-            //            return new
-            //            {
-            //                threadLocalProxy
-            //            };
-            //        },
-            //        (item, loopState, context) =>
-            //        {
-            //            // partition body - put the 'guts' of your operation in here 
-            //            // ensure this method is one-off and all it's own 'thing' and doesn't share resources 
-            //            try
-            //            {
-            //                var response = context.threadLocalProxy.Execute(item);
-            //                // TODO : transform response into app insight metrics
-            //                LogEvent(response.ResponseName, null, this.JobName);
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                LogException(ex, new Dictionary<string, string>(), this.JobName);
-            //            }
-
-            //            // any and all current or downstream logging *must* be threadsafe and multi-thread optimized 
-            //            // use appinsights or ent lib to log so that it doesn't block any other threads 
-            //            // if you hit thread contention in logging it will slow down your execution greatly 
-
-            //            // return the context to be re-used or to be 'closed' 
-            //            return context;
-            //        },
-            //        (context) =>
-            //        {
-            //            // final method per parition / task
-            //            // this is only called when the thread partition is being shut down / closed / completed
-            //            context.threadLocalProxy.Dispose();
-            //        });
-
-            var requestsGroups = requests.ChunkBy(requests.Count / 4);
-
-            Parallel.ForEach(requestsGroups, new ParallelOptions(){ MaxDegreeOfParallelism = 10}, (requestsGroup) =>
-            {
-                var responses = OrganizationServiceManager.ParallelProxy
-                    .Execute<OrganizationRequest, OrganizationResponse>
-                    (
-                        requestsGroup,
-                        (request, ex) => { LogException(ex, new Dictionary<string, string>(), this.JobName); }
-                    );
-                foreach (var response in responses)
+            // Use PFE Xrm Core Parallel Proxy to process CRM request collection 
+            var responses = OrganizationServiceManager.ParallelProxy.Execute<OrganizationRequest, OrganizationResponse>
+            (
+                requests,
+                (request, ex) =>
                 {
-                    LogEvent(response.ResponseName, null, this.JobName);
+                    // Report failures to Application Insights
+                    var messageEntityData = MessagesEntityData.Where(m => m.RequestId == request.RequestId.Value).FirstOrDefault();
+                    LogException(ex, messageEntityData.Properties, this.JobName);
                 }
+            );
+
+            // Track response to Application Insights
+            Parallel.ForEach(responses, new ParallelOptions() { MaxDegreeOfParallelism = JobSettings.ThreadNumber }, (response) =>
+            {
+                var recordId = (Guid) response.Results["id"];
+                var messageEntityData = MessagesEntityData.Where(m => m.RecordId == recordId).FirstOrDefault();
+                LogEvent("Contact created successfully!", messageEntityData.Properties, this.JobName);
             });
         }
 
@@ -164,7 +138,8 @@ namespace AzureD365DemoWebJob
 
             if (contactJson.contactid.HasValue)
             {
-                crmRecord[CrmContact.Fields.ContactId] = contactJson.contactid;
+                crmRecord[CrmContact.Fields.ContactId] = contactJson.contactid.Value;
+                crmRecord.Id = contactJson.contactid.Value;
             }
 
             if (contactJson.description.IsJsonPropertyDefined())
