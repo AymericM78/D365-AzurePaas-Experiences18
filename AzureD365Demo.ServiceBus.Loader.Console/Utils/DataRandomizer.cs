@@ -8,7 +8,7 @@ namespace AzureD365Demo.ServiceBus.Loader.Console.Utils
 {
     internal class DataRandomizer
     {
-        private static char[] Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+        private static char[] Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcefghijklmnopqrstuvwxyz".ToCharArray();
         private static Random m_randomInstance = new Random();
         private static object m_randLock = new object();
 

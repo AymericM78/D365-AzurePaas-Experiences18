@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -130,16 +131,19 @@ namespace AzureD365Demo.App
             var day = DataRandomizer.GetRandomInt(1, 25);
             var birthDate = new DateTime(year, month, day);
 
+            TextInfo textInfo = new CultureInfo("fr-FR", false).TextInfo;
+
+
             var contact = new Contact
             {
                 birthdate = birthDate,
                 contactid = Guid.NewGuid(),
                 description = DataRandomizer.GetRandomString(5, 30),
                 emailaddress1 = string.Concat(DataRandomizer.GetRandomString(5, 10), "@nonexistingdomain.disabled"),
-                firstname = DataRandomizer.GetRandomString(5, 10),
+                firstname = textInfo.ToTitleCase(DataRandomizer.GetRandomString(5, 10)),
                 gendercode = DataRandomizer.GetRandomInt(1, 2).ToString(),
                 jobtitle = DataRandomizer.GetRandomString(5, 20),
-                lastname = DataRandomizer.GetRandomString(5, 10),
+                lastname = textInfo.ToTitleCase(DataRandomizer.GetRandomString(5, 10)),
                 mobilephone = DataRandomizer.GetRandomPhoneNumber(true),
                 telephone1 = DataRandomizer.GetRandomPhoneNumber(),
                 telephone2 = DataRandomizer.GetRandomPhoneNumber()
