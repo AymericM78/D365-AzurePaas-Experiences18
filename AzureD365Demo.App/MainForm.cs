@@ -149,7 +149,7 @@ namespace AzureD365Demo.App
                 telephone2 = DataRandomizer.GetRandomPhoneNumber()
             };
 
-            var errorRatio = DataRandomizer.GetRandomInt(1, 10);
+            var errorRatio = DataRandomizer.GetRandomInt(1, 20);
             if(errorRatio == 1)
             {
                 contact.jobtitle = DataRandomizer.GetRandomString(110, 120);
