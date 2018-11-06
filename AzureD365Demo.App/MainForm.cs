@@ -309,7 +309,7 @@ namespace AzureD365Demo.App
         /// <param name="message"></param>
         private void Log(string message)
         {
-            txtConsole.Text += $"{DateTime.Now.ToLongTimeString() } {message} {Environment.NewLine}";
+            txtConsole.Text += $"{DateTime.Now.ToLongTimeString() } => {message} {Environment.NewLine}";
         }
 
         /// <summary>
